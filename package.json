@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "bunx vite ."
+    "start": "vite"
   },
   "keywords": [],
   "author": "",
@@ -12,5 +12,8 @@
   "description": "",
   "dependencies": {
     "kaboom": "^3000.1.17"
+  },
+  "devDependencies": {
+    "vite": "^7.1.11"
   }
 }

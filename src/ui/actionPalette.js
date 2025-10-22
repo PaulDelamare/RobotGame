@@ -3,8 +3,8 @@ export function createActionPalette(k, uiY, onSelect) {
 
   const cards = [
     { label: "Avancer", action: "forward", x: 20 },
-    { label: "Tourner droite", action: "right", x: 160 },
-    { label: "Tourner gauche", action: "left", x: 320 },
+    { label: "Tourner gauche", action: "right", x: 160 },
+    { label: "Tourner droite", action: "left", x: 320 },
   ];
 
   for (const cardDef of cards) {
