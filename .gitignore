@@ -1,0 +1,48 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs / editors
+.vscode/
+.idea/
+*.suo
+*.user
+*.sln.docstates
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+env/
+venv/
+.venv/
+pip-wheel-metadata/
+build/
+dist/
+*.egg-info/
+
+# Node
+node_modules/
+
+# Logs / env
+*.log
+.env
+.env.local
+.env.*.local
+
+# Build artifacts / binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test / coverage
+coverage.xml
+htmlcov/
+.coverage
+.coverage.*
+
+# Databases
+*.sqlite3
+*.db
