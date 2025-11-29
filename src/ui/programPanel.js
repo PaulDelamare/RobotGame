@@ -1,8 +1,38 @@
+import { MAX_FORWARD_STEPS } from "../config/constants.js";
+
 const PROGRAM_ITEM_HEIGHT = 42;
 const PROGRAM_PANEL_MARGIN_BOTTOM = 140;
 const PROGRAM_PANEL_WIDTH = 200;
 const PROGRAM_BASE_Y = 10;
 const PROGRAM_BASE_X_OFFSET = 220;
+
+function normalizeActionDescriptor(action) {
+  if (!action) {
+    return { type: "forward", steps: 1 };
+  }
+  if (typeof action === "string") {
+    return { type: action, steps: 1 };
+  }
+  const type = action.type || action.action || "forward";
+  const rawSteps = Number(action.steps ?? 1);
+  const steps = Number.isFinite(rawSteps) ? Math.max(1, Math.min(rawSteps, MAX_FORWARD_STEPS)) : 1;
+  return { type, steps };
+}
+
+function formatActionLabel(descriptor) {
+  let baseLabel = "Action inconnue";
+  if (descriptor.type === "forward") {
+    baseLabel = "Avancer";
+  } else if (descriptor.type === "right") {
+    baseLabel = "Tourner droite";
+  } else if (descriptor.type === "left") {
+    baseLabel = "Tourner gauche";
+  }
+  if (descriptor.type === "forward" && descriptor.steps > 1) {
+    return `${baseLabel} : ${descriptor.steps}`;
+  }
+  return baseLabel;
+}
 
 export function createProgramPanel(k, state, uiBaseY) {
   const { add, rect, pos, color, outline, rgb, area, text, anchor, width, onScroll, destroy } = k;
@@ -142,7 +172,7 @@ export function createProgramPanel(k, state, uiBaseY) {
     };
 
     for (let i = startIdx; i < endIdx; i++) {
-      const action = state.program[i];
+      const actionDescriptor = normalizeActionDescriptor(state.program[i]);
       const itemY = panelTop + 4 + (i - startIdx) * PROGRAM_ITEM_HEIGHT + offsetY;
       const itemBottom = itemY + 36;
 
@@ -150,7 +180,7 @@ export function createProgramPanel(k, state, uiBaseY) {
         continue;
       }
 
-      const label = action === "forward" ? "Avancer" : action === "right" ? "Tourner droite" : "Tourner gauche";
+      const label = formatActionLabel(actionDescriptor);
 
       const btnRect = add([
         rect(PROGRAM_PANEL_WIDTH, 36),
@@ -235,7 +265,7 @@ export function createProgramPanel(k, state, uiBaseY) {
   }
 
   function addAction(action) {
-    state.program.push(action);
+    state.program.push(normalizeActionDescriptor(action));
     render();
   }
 
