@@ -85,7 +85,7 @@ export function moveForward(k, state, mapLayout, tileSize) {
 
 export function turnRight(k, state, tileSize) {
   const { vec2 } = k;
-  state.robotDir = vec2(state.robotDir.y, -state.robotDir.x);
+  state.robotDir = vec2(-state.robotDir.y, state.robotDir.x);
   if (state.robot) {
     state.robot.angle = dirToAngle(state.robotDir);
   }
@@ -94,7 +94,7 @@ export function turnRight(k, state, tileSize) {
 
 export function turnLeft(k, state, tileSize) {
   const { vec2 } = k;
-  state.robotDir = vec2(-state.robotDir.y, state.robotDir.x);
+  state.robotDir = vec2(state.robotDir.y, -state.robotDir.x);
   if (state.robot) {
     state.robot.angle = dirToAngle(state.robotDir);
   }
