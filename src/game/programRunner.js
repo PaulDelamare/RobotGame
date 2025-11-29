@@ -1,10 +1,24 @@
+import { MAX_FORWARD_STEPS } from "../config/constants.js";
 import { moveForward, turnRight, turnLeft } from "../entities/robot.js";
 import { stepAliens } from "../entities/aliens.js";
 import { transformDoorToGoal } from "../entities/dynamics.js";
 import { isSpikeAt } from "../utils/collision.js";
 
+function normalizeProgramAction(action) {
+  if (!action) {
+    return { type: "forward", steps: 1 };
+  }
+  if (typeof action === "string") {
+    return { type: action, steps: 1 };
+  }
+  const type = action.type || action.action || "forward";
+  const rawSteps = Number(action.steps ?? 1);
+  const steps = Number.isFinite(rawSteps) ? Math.max(1, Math.min(rawSteps, MAX_FORWARD_STEPS)) : 1;
+  return { type, steps };
+}
+
 export function createProgramRunner(k, state, config, programUI, levelManager, toast) {
-  const { mapLayout, tileSize } = config;
+  const { tileSize } = config;
   const { wait, get, vec2 } = k;
 
   async function run() {
@@ -19,46 +33,44 @@ export function createProgramRunner(k, state, config, programUI, levelManager, t
 
     for (let i = 0; i < state.program.length; i++) {
       programUI.setCurrentAction(i);
-      const action = state.program[i];
+      const action = normalizeProgramAction(state.program[i]);
+      const currentMap = levelManager.getCurrentMap();
 
-      if (action === "forward") {
-        const ok = moveForward(k, state, mapLayout, tileSize);
+      stepAliens(k, state, currentMap, tileSize);
+      if (await handleLoseIfNeeded()) {
+        return;
+      }
+
+      if (action.type === "forward") {
+        const ok = await executeForwardSteps(action.steps, currentMap);
         if (!ok) {
-          console.log("🚧 Bloqué par un mur : retour au départ.");
-          toast?.show("🚧 Bloqué par un obstacle", { tone: "warning" });
-          await handleReset();
           return;
         }
-      }
-
-      if (action === "right") {
+      } else if (action.type === "right") {
         turnRight(k, state, tileSize);
-      }
-
-      if (action === "left") {
+      } else if (action.type === "left") {
         turnLeft(k, state, tileSize);
-      }
-
-      stepAliens(k, state, mapLayout, tileSize);
-
-      await wait(0.28);
-
-      handleKeyPickup();
-
-      const loseState = checkLoseConditions();
-      if (loseState.lose) {
-        console.log(`💥 Perdu (${loseState.reason}) — retour au départ.`);
-        toast?.show("💥 Tentative ratée, retour au départ", { tone: "danger" });
-        await handleReset();
-        return;
+      } else {
+        console.warn("Instruction inconnue", action);
+        toast?.show("Instruction inconnue ignorée", { tone: "warning" });
+        continue;
       }
 
       if (reachedGoal()) {
         console.log("🏁 Arrivée atteinte ! Gagné.");
         toast?.show("🏁 Bravo, niveau réussi !", { tone: "success" });
         programUI.clearCurrentAction();
+        const advanced = levelManager.advanceLevel();
+        if (!advanced) {
+          toast?.show("✨ Démo terminée, bravo !", { tone: "success" });
+        }
         return;
       }
+      if (await handleLoseIfNeeded()) {
+        return;
+      }
+
+      await wait(0.28);
     }
 
     programUI.clearCurrentAction();
@@ -71,7 +83,7 @@ export function createProgramRunner(k, state, config, programUI, levelManager, t
     programUI.clearCurrentAction();
     programUI.render();
     await wait(0.2);
-    levelManager.resetLevel();
+    levelManager.resetLevel({ preserveProgram: true });
     toast?.show("↺ Niveau réinitialisé", { tone: "info", duration: 1.6 });
   }
 
@@ -104,7 +116,7 @@ export function createProgramRunner(k, state, config, programUI, levelManager, t
     }
 
     if (collectedThisStep && state.collectedKeys >= state.totalKeys && state.totalKeys > 0) {
-      console.log("� La porte révèle désormais l'arrivée !");
+      console.log("🚪 La porte révèle désormais l'arrivée !");
       toast?.show("🚪 La porte s'ouvre sur l'arrivée", { tone: "success" });
       transformDoorToGoal(k, state, tileSize);
     }
@@ -141,4 +153,36 @@ export function createProgramRunner(k, state, config, programUI, levelManager, t
   return {
     run,
   };
+
+  async function executeForwardSteps(stepCount, currentMap) {
+    const totalSteps = Math.max(1, Math.min(stepCount, MAX_FORWARD_STEPS));
+    for (let step = 0; step < totalSteps; step++) {
+      const ok = moveForward(k, state, currentMap, tileSize);
+      if (!ok) {
+        console.log("🚧 Bloqué par un mur : retour au départ.");
+        toast?.show("🚧 Bloqué par un obstacle", { tone: "warning" });
+        await handleReset();
+        return false;
+      }
+      handleKeyPickup();
+      if (await handleLoseIfNeeded()) {
+        return false;
+      }
+      if (totalSteps > 1 && step < totalSteps - 1) {
+        await wait(0.12);
+      }
+    }
+    return true;
+  }
+
+  async function handleLoseIfNeeded() {
+    const loseState = checkLoseConditions();
+    if (!loseState.lose) {
+      return false;
+    }
+    console.log(`💥 Perdu (${loseState.reason}) — retour au départ.`);
+    toast?.show("💥 Tentative ratée, retour au départ", { tone: "danger" });
+    await handleReset();
+    return true;
+  }
 }
