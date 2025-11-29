@@ -1,6 +1,6 @@
 import kaboom from "kaboom";
 import { createGameScene } from "./src/core/createGameScene.js";
-import { TILE_SIZE, MAP_LAYOUT, ALIEN_PATROLS } from "./src/config/constants.js";
+import { TILE_SIZE, LEVELS } from "./src/config/constants.js";
 
 const k = kaboom({
   background: [25, 25, 25],
@@ -9,6 +9,5 @@ const k = kaboom({
 
 createGameScene(k, {
   tileSize: TILE_SIZE,
-  mapLayout: MAP_LAYOUT,
-  patrols: ALIEN_PATROLS,
+  levels: LEVELS,
 });
