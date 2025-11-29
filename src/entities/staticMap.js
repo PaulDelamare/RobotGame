@@ -9,6 +9,7 @@ export function drawBaseGrid(k, mapLayout, tileSize) {
         pos(x * tileSize, y * tileSize),
         color(40, 40, 40),
         outline(1, rgb(65, 65, 65)),
+        "grid",
       ]);
     }
   }
@@ -40,4 +41,15 @@ export function buildStaticMap(k, state, mapLayout, tileSize) {
       }
     }
   }
+}
+
+export function clearStaticScene(k) {
+  const { destroyAll } = k;
+  if (typeof destroyAll !== "function") {
+    return;
+  }
+  destroyAll("grid");
+  destroyAll("mur");
+  destroyAll("spike_vis");
+  destroyAll("arrivee");
 }
