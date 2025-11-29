@@ -46,10 +46,13 @@ export function createToastManager(k) {
 
     const palette = tones[tone] || tones.info;
     const padding = 48;
-    const baseWidth = Math.max(220, Math.min(520, message.length * 11 + padding));
+    const baseWidth = Math.max(240, Math.min(720, message.length * 12 + padding));
+    const approxCharsPerLine = Math.max(20, Math.floor((baseWidth - padding) / 9));
+    const lineCount = Math.max(1, Math.ceil(message.length / approxCharsPerLine));
+    const boxHeight = baseHeight + (lineCount - 1) * 24;
 
     const bg = add([
-      rect(baseWidth, baseHeight),
+      rect(baseWidth, boxHeight),
       pos(width() / 2, 0),
       color(...palette.bg),
       outline(3, rgb(...palette.outline)),
@@ -58,14 +61,14 @@ export function createToastManager(k) {
     ]);
 
     const label = add([
-      text(message, { size: 18 }),
+      text(message, { size: 18, align: "center", width: baseWidth - padding }),
       pos(width() / 2, 0),
       anchor("center"),
       color(255, 255, 255),
       { ui: true, z: 10_001 },
     ]);
 
-    const entry = { bg, label, height: baseHeight };
+    const entry = { bg, label, height: boxHeight };
     toasts.push(entry);
     layout();
 
