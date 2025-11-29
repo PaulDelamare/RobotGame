@@ -5,6 +5,7 @@ export function createGameState() {
     dirMarker: null,
     program: [],
     aliens: [],
+    alienCycle: null,
     spikes: [],
   keys: [],
   collectedKeys: 0,
