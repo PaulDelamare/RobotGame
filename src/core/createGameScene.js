@@ -5,6 +5,7 @@ import { createPlayButton } from "../ui/playButton.js";
 import { createProgramRunner } from "../game/programRunner.js";
 import { createLevelManager } from "../game/levelManager.js";
 import { createToastManager } from "../ui/toast.js";
+import { createLevelSelector } from "../ui/levelSelector.js";
 
 export function createGameScene(k, config) {
   const state = createGameState();
@@ -13,26 +14,57 @@ export function createGameScene(k, config) {
   const programPanel = createProgramPanel(k, state, uiY);
   programPanel.render();
 
-  const levelManager = createLevelManager(k, state, config, programPanel);
   const toast = createToastManager(k);
-  const runner = createProgramRunner(k, state, config, programPanel, levelManager, toast);
-
-  createActionPalette(k, uiY, (action) => {
+  const actionPalette = createActionPalette(k, uiY, (action) => {
     programPanel.addAction(action);
   });
+
+  let levelSelector = null;
+  const levelManager = createLevelManager(
+    k,
+    state,
+    config,
+    programPanel,
+    actionPalette,
+    toast,
+    {
+      onLevelChange: (index) => {
+        levelSelector?.setActive(index);
+      },
+    }
+  );
+
+  const selectorWidth = config.levels.length * 110 + Math.max(0, config.levels.length - 1) * 12;
+  levelSelector = createLevelSelector(
+    k,
+    config.levels,
+    (index) => {
+      levelManager.loadLevel(index);
+    },
+    {
+      baseX: 20,
+      baseY: Math.max(16, uiY - 160),
+      showPanel: true,
+      zIndex: 950,
+      width: selectorWidth,
+    }
+  );
+
+  const runner = createProgramRunner(k, state, config, programPanel, levelManager, toast);
 
   createPlayButton(k, uiY, () => {
     runner.run();
   });
 
-  levelManager.setupStaticScene();
-  levelManager.resetLevel();
+  levelManager.start();
 
   return {
     state,
     runner,
     levelManager,
     programPanel,
+    actionPalette,
+    levelSelector,
     toast,
   };
 }
