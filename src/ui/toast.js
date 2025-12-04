@@ -1,16 +1,22 @@
-export function createToastManager(k) {
+export function createToastManager(k, options = {}) {
   const { add, rect, pos, color, outline, rgb, anchor, text, destroy, wait, width, vec2 } = k;
 
-  const spacing = 12;
-  const baseHeight = 56;
+  const textSize = Math.max(10, options.textSize ?? 12);
+  const spacing = Math.max(4, options.spacing ?? 8);
+  const paddingX = Math.max(16, options.paddingX ?? 32);
+  const paddingY = Math.max(8, options.paddingY ?? 12);
+  const lineSpacing = Math.max(4, options.lineSpacing ?? 6);
+  const minBoxHeight = Math.max(textSize + paddingY, options.baseHeight ?? textSize + paddingY + 8);
+  const approxCharWidth = textSize * 0.65;
+  const baseY = Math.max(minBoxHeight / 2 + 8, options.baseY ?? 56);
+  const stackDirection = options.stackDirection === -1 ? -1 : 1;
   const toasts = [];
 
   function layout() {
     const centerX = width() / 2;
-    const baseY = 56;
 
     toasts.forEach((entry, index) => {
-      const offsetY = baseY + index * (entry.height + spacing);
+      const offsetY = baseY + stackDirection * index * (entry.height + spacing);
       const targetPos = vec2(centerX, offsetY);
       entry.bg.pos = targetPos;
       entry.label.pos = targetPos;
@@ -45,11 +51,10 @@ export function createToastManager(k) {
     };
 
     const palette = tones[tone] || tones.info;
-    const padding = 48;
-    const baseWidth = Math.max(240, Math.min(720, message.length * 12 + padding));
-    const approxCharsPerLine = Math.max(20, Math.floor((baseWidth - padding) / 9));
+    const baseWidth = Math.max(180, Math.min(560, message.length * approxCharWidth + paddingX));
+    const approxCharsPerLine = Math.max(16, Math.floor((baseWidth - paddingX) / approxCharWidth));
     const lineCount = Math.max(1, Math.ceil(message.length / approxCharsPerLine));
-    const boxHeight = baseHeight + (lineCount - 1) * 24;
+    const boxHeight = minBoxHeight + (lineCount - 1) * (textSize + lineSpacing);
 
     const bg = add([
       rect(baseWidth, boxHeight),
@@ -61,7 +66,7 @@ export function createToastManager(k) {
     ]);
 
     const label = add([
-      text(message, { size: 18, align: "center", width: baseWidth - padding }),
+      text(message, { size: textSize, align: "center", width: baseWidth - paddingX }),
       pos(width() / 2, 0),
       anchor("center"),
       color(255, 255, 255),

@@ -1,29 +1,49 @@
 # RobotGame
 
-Petite application de démonstration.
+Démo pédagogique : programme ton robot, récupère les clés, évite les dangers et termine chaque niveau.
 
-Pour lancer le projet sans bun (Node + npm) :
+## Prérequis
 
-1. Installer les dépendances :
+- Node.js 18+ (recommandé) et npm
+- Git (pour cloner le dépôt)
 
-```powershell
-npm install
-```
+> 💡 Le projet s'appuie sur **Vite**. Assure-toi qu'il est bien installé comme dépendance de développement, sinon la commande `npm run start` échouera.
 
-2. Installer vite en local si ce n'est pas déjà fait :
+## Installation
 
-```powershell
-npm install -D vite
-```
+1. **Cloner le dépôt** :
 
-3. Lancer le serveur de développement :
+	```powershell
+	git clone https://github.com/PaulDelamare/RobotGame.git
+	cd RobotGame
+	```
+
+2. **Installer les dépendances npm** :
+
+	```powershell
+	npm install
+	```
+
+3. **Installer Vite en local** (si l'étape précédente ne l'a pas déjà ajouté) :
+
+	```powershell
+	npm install -D vite
+	```
+
+## Lancer le projet
 
 ```powershell
 npm run start
 ```
 
-Le serveur s'ouvrira par défaut sur `http://localhost:5173/`.
+- L'interface est accessible sur `http://localhost:5173/`.
+- Pour autoriser les connexions réseau (smartphone, autre PC), ajoute `--host` :
 
-Notes :
-- Le script `start` utilise le binaire local `vite` (résolu par npm). Si vous préférez bun, remplacez `start` par `bunx vite .` dans `package.json`.
-- Pour exposer le serveur sur le réseau, lancez `npm run start -- --host`.
+  ```powershell
+  npm run start -- --host
+  ```
+
+## Notes
+
+- Le script `start` lance `vite` depuis `node_modules/.bin`. Si tu préfères **bun**, adapte `package.json` (`bunx vite .`).
+- En cas de mise à jour de dépendances, relance `npm install` puis `npm run start`.

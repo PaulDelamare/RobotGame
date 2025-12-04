@@ -14,7 +14,12 @@ export function createGameScene(k, config) {
   const programPanel = createProgramPanel(k, state, uiY);
   programPanel.render();
 
-  const toast = createToastManager(k);
+  const toastBaseY = Math.min(k.height() - 70, Math.max(56, uiY - 40));
+  const toast = createToastManager(k, {
+    baseY: toastBaseY,
+    stackDirection: -1,
+    textSize: 12,
+  });
   const actionPalette = createActionPalette(k, uiY, (action) => {
     programPanel.addAction(action);
   });

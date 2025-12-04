@@ -42,8 +42,11 @@ export function createProgramRunner(k, state, config, programUI, levelManager, t
       }
 
       if (action.type === "forward") {
-        const ok = await executeForwardSteps(action.steps, currentMap);
-        if (!ok) {
+        const stepResult = await executeForwardSteps(action.steps, currentMap);
+        if (stepResult === "win") {
+          return;
+        }
+        if (!stepResult) {
           return;
         }
       } else if (action.type === "right") {
@@ -56,14 +59,7 @@ export function createProgramRunner(k, state, config, programUI, levelManager, t
         continue;
       }
 
-      if (reachedGoal()) {
-        console.log("🏁 Arrivée atteinte ! Gagné.");
-        toast?.show("🏁 Bravo, niveau réussi !", { tone: "success" });
-        programUI.clearCurrentAction();
-        const advanced = levelManager.advanceLevel();
-        if (!advanced) {
-          toast?.show("✨ Démo terminée, bravo !", { tone: "success" });
-        }
+      if (completeLevelIfNeeded()) {
         return;
       }
       if (await handleLoseIfNeeded()) {
@@ -150,6 +146,20 @@ export function createProgramRunner(k, state, config, programUI, levelManager, t
     return state.robot.gridPos.x === grid.x && state.robot.gridPos.y === grid.y;
   }
 
+  function completeLevelIfNeeded() {
+    if (!reachedGoal()) {
+      return false;
+    }
+    console.log("🏁 Arrivée atteinte ! Gagné.");
+    toast?.show("🏁 Bravo, niveau réussi !", { tone: "success" });
+    programUI.clearCurrentAction();
+    const advanced = levelManager.advanceLevel();
+    if (!advanced) {
+      toast?.show("✨ Démo terminée, bravo !", { tone: "success" });
+    }
+    return true;
+  }
+
   return {
     run,
   };
@@ -167,6 +177,9 @@ export function createProgramRunner(k, state, config, programUI, levelManager, t
       handleKeyPickup();
       if (await handleLoseIfNeeded()) {
         return false;
+      }
+      if (completeLevelIfNeeded()) {
+        return "win";
       }
       if (totalSteps > 1 && step < totalSteps - 1) {
         await wait(0.12);

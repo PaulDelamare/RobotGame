@@ -1,5 +1,5 @@
 import { tileCenterPos, signVec } from "../utils/geometry.js";
-import { isWallAt, isSpikeAt } from "../utils/collision.js";
+import { isWallAt } from "../utils/collision.js";
 
 export function spawnAliens(k, state, level, tileSize) {
   const { add, text, pos, anchor, area, vec2, destroy } = k;
@@ -79,7 +79,7 @@ export function stepAliens(k, state, mapLayout, tileSize) {
     for (const alien of state.aliens) {
       const nextX = alien.cur.x + dir.x;
       const nextY = alien.cur.y + dir.y;
-      if (isWallAt(k, mapLayout, tileSize, nextX, nextY) || isSpikeAt(state.spikes, nextX, nextY)) {
+      if (isWallAt(k, mapLayout, tileSize, nextX, nextY)) {
         pendingPositions.push({ x: alien.cur.x, y: alien.cur.y });
       } else {
         pendingPositions.push({ x: nextX, y: nextY });
@@ -111,7 +111,7 @@ export function stepAliens(k, state, mapLayout, tileSize) {
 
     const attemptMove = (direction) => {
       const next = alien.cur.add(direction);
-      if (isWallAt(k, mapLayout, tileSize, next.x, next.y) || isSpikeAt(state.spikes, next.x, next.y)) {
+      if (isWallAt(k, mapLayout, tileSize, next.x, next.y)) {
         return false;
       }
       alien.cur = next;
